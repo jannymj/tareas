@@ -1,3 +1,27 @@
+<?php
+session_start(); // Inicia la sesión
+
+// Verifica si el formulario fue enviado mediante el método POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Captura los valores del formulario
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    // Verifica si los campos son correctos
+    if ($email === 'nombre@cesun.edu.mx' && $password === '12345') {
+        // Almacena la variable de sesión para indicar que el usuario inició sesión correctamente
+        $_SESSION['loggedin'] = true;
+
+        // Redirige al archivo donde se encuentra el tablero de tareas
+        header('Location: task.html');
+        exit();
+    } else {
+        // Si los datos son incorrectos, muestra un mensaje de error
+        $error = "Correo o contraseña inválidos";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,7 +37,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #fce4ec, #f48fb1); /* Rosa claro */
+            background: linear-gradient(135deg, #fce4ec, #f48fb1);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -30,7 +54,7 @@
         }
 
         .login-container h2 {
-            color: #ec407a; 
+            color: #ec407a;
             font-size: 1.8em;
             margin-bottom: 30px;
             font-weight: 600;
@@ -56,7 +80,7 @@
 
         .login-container input:focus {
             outline: none;
-            border-color: #ec407a; 
+            border-color: #ec407a;
         }
 
         .login-container button {
@@ -91,7 +115,6 @@
             color: #d81b60;
         }
 
-        
         @media (max-width: 400px) {
             .login-container {
                 width: 90%;
@@ -103,7 +126,11 @@
 
 <div class="login-container">
     <h2>Iniciar Sesión</h2>
-    <form>
+    <form action="" method="POST"> <!-- Agregué el method POST -->
+        <?php if (isset($error)): ?>
+            <p style="color: pink;"><?php echo $error; ?></p> <!-- Mensaje de error en rojo -->
+        <?php endif; ?>
+
         <label for="email">Correo Electrónico:</label>
         <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
 
