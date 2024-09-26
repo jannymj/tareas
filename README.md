@@ -1,2 +1,0 @@
-# tareas
-tablero de tareas
