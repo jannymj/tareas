@@ -1,24 +1,46 @@
 <?php
-session_start(); // Inicia la sesión
+session_start();
 
-// Verifica si el formulario fue enviado mediante el método POST
+// Inicializar variable de error
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Captura los valores del formulario
-    $email = $_POST['email'];
+    $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Verifica si los campos son correctos
-    if ($email === 'nombre@cesun.edu.mx' && $password === '12345') {
-        // Almacena la variable de sesión para indicar que el usuario inició sesión correctamente
-        $_SESSION['loggedin'] = true;
+    // Conexión a la base de datos
+    $conn = new mysqli("localhost", "root", "", "tasks_manager");
 
-        // Redirige al archivo donde se encuentra el tablero de tareas
-        header('Location: task.html');
-        exit();
-    } else {
-        // Si los datos son incorrectos, muestra un mensaje de error
-        $error = "Correo o contraseña inválidos";
+    // Verificar la conexión
+    if ($conn->connect_error) {
+        die("Conexión fallida: " . $conn->connect_error);
     }
+
+    // Buscar al usuario en la base de datos
+    $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+        // Verificar la contraseña
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            // Redirigir al Task Manager
+            header("Location: task_manager.php");
+            exit();
+        } else {
+            $error = "Contraseña incorrecta.";
+        }
+    } else {
+        $error = "Usuario no encontrado."; 
+    }
+
+    $stmt->close();
+    $conn->close();
 }
 ?>
 
@@ -34,23 +56,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="login-container">
     <h2>Iniciar Sesión</h2>
-    <form action="" method="POST">
-        <?php if (isset($error)): ?>
-            <p style="color: red;"><?php echo $error; ?></p> <!-- Mensaje de error en rojo -->
+    <form action="login.php" method="POST">
+        
+        <?php if (!empty($error)): ?>
+            <p class="error-message"><?php echo $error; ?></p>
         <?php endif; ?>
 
-        <label for="email">Correo Electrónico:</label>
-        <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
+        <label for="username">Nombre de Usuario:</label>
+        <input type="text" id="username" name="username" required placeholder="Ingrese su usuario">
 
         <label for="password">Contraseña:</label>
-        <input type="password" id="password" name="password" required placeholder="Ingresa tu contraseña">
+        <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña">
 
         <button type="submit">Entrar</button>
     </form>
-
-    <div class="forgot-password">
-        <p>¿Olvidaste tu contraseña? <a href="#">Recupérala aquí</a></p>
-    </div>
 </div>
 
 </body>

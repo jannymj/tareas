@@ -83,6 +83,12 @@ body {
 .login-container .forgot-password a:hover {
     color: #d81b60;
 }
+.error-message {
+    color: red;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
 
 @media (max-width: 400px) {
     .login-container {
